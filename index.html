@@ -3,14 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>簡約換匯小工具</title>
+  <title>日幣換匯小工具</title>
   
+  <!-- 載入大大指定的字體 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@282&display=swap" rel="stylesheet">
   
   <style>
     :root {
+      /* 設定指定色彩變數 */
       --bg-color: #E1DBC9;
       --amount-card-bg: #2D4530;
       --rate-card-bg: #3C3C3C;
@@ -23,9 +25,18 @@
     }
 
     body {
-      background-color: var(--bg-color);
+      /* 塔塔自由發揮：加入圖片作為背景 */
+      background-image: url('ss.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      
+      /* 套用指定字體 */
       font-family: "M PLUS 1 Code", monospace;
+      font-optical-sizing: auto;
       font-weight: 282;
+      font-style: normal;
+      
       display: flex;
       justify-content: center;
       align-items: center;
@@ -33,38 +44,39 @@
       margin: 0;
     }
 
+    /* 加入一個半透明層，確保文字清晰且圖片可見 */
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(225, 219, 201, 0.7); /* 使用指定的 #E1DBC9 作為覆蓋色，但加了透明度 */
+      z-index: 0;
+    }
+
     .exchange-container {
+      position: relative;
+      z-index: 1; /* 確保內容在覆蓋層之上 */
       width: 100%;
       max-width: 400px;
       padding: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center; /* 讓圖示置中 */
       gap: 20px;
     }
 
-    /* 桌面圖示的樣式 */
-    .app-icon {
-      width: 80px;
-      height: 80px;
-      border-radius: 18px; /* 類似 iOS 的圓角 */
-      object-fit: cover;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-bottom: 8px;
-    }
-
     .card {
-      width: 100%;
       border-radius: 20px;
       padding: 32px 24px;
       color: var(--text-color);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
       transition: transform 0.2s ease;
     }
 
     .card:focus-within {
       transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
     }
 
     .amount-card {
@@ -107,6 +119,7 @@
       color: rgba(225, 219, 201, 0.3);
     }
 
+    /* 隱藏數字輸入框自帶的上下箭頭 */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -116,11 +129,15 @@
       -moz-appearance: textfield;
     }
 
+    /* 計算結果顯示區塊 */
     .result-section {
       text-align: center;
-      padding: 16px 0;
+      padding: 24px 0;
       color: var(--result-text);
-      width: 100%;
+      /* 加入一個更亮、更穩定的背景，讓結果更顯眼，即使在圖片背景上 */
+      background-color: #F0EDE3; /* 稍微比 E1DBC9 亮一點 */
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
     .result-label {
@@ -139,53 +156,60 @@
 </head>
 <body>
 
-  <div class="exchange-container">
-    <!-- 加入大大的桌面圖示 -->
-    <img src="ss.jpg" alt="App Icon" class="app-icon" onerror="this.style.display='none'">
+  <div class="overlay"></div>
 
-    <!-- 上方：輸入日幣金額 -->
+  <div class="exchange-container">
+    <!-- 上方：輸入金額 日幣 -->
     <div class="card amount-card">
       <div class="input-group">
-        <label for="amount">輸入金額 (日幣)</label>
+        <!-- 修正為「輸入金額 日幣」 -->
+        <label for="amount">輸入金額 日幣 (JPY)</label>
         <input type="number" id="amount" placeholder="0" min="0">
       </div>
     </div>
 
-    <!-- 下方：輸入匯率 -->
+    <!-- 下方：當前匯率 (日幣 對 台幣) -->
     <div class="card rate-card">
       <div class="input-group">
-        <label for="rate">當前匯率</label>
+        <!-- 加強標籤描述，預設值保持 0.1998 -->
+        <label for="rate">當前匯率 (日幣 對 台幣)</label>
         <input type="number" id="rate" value="0.1998" step="0.0001" min="0">
       </div>
     </div>
 
-    <!-- 計算結果 (換算為台幣通常直接四捨五入到整數) -->
+    <!-- 計算結果 (可換得台幣) -->
     <div class="result-section">
-      <div class="result-label">折合台幣約為</div>
+      <!-- 修正為「可換得台幣」 -->
+      <div class="result-label">可換得台幣 (TWD)</div>
       <div class="result-value" id="result">0</div>
     </div>
   </div>
 
   <script>
+    // 綁定輸入框與結果顯示元素
     const amountInput = document.getElementById('amount');
     const rateInput = document.getElementById('rate');
     const resultDisplay = document.getElementById('result');
 
+    // 即時計算函數
     function calculateExchange() {
-      const amount = parseFloat(amountInput.value) || 0;
+      const amountJPY = parseFloat(amountInput.value) || 0;
       const rate = parseFloat(rateInput.value) || 0;
 
-      if (amount > 0 && rate > 0) {
-        // 日幣乘上匯率等於台幣
-        const converted = amount * rate;
+      if (amountJPY > 0 && rate > 0) {
+        // 修正計算邏輯：日幣金額 * 匯率 = 台幣
+        const converted = amountJPY * rate;
         
-        // 台幣通常不看小數點，這裡幫大大做了四捨五入到整數的處理
-        resultDisplay.textContent = Math.round(converted).toLocaleString('zh-TW');
+        // 格式化數字，加上千分位撇號並限制小數點後兩位
+        resultDisplay.textContent = new Intl.NumberFormat('zh-TW', { 
+          maximumFractionDigits: 2 
+        }).format(converted);
       } else {
         resultDisplay.textContent = '0';
       }
     }
 
+    // 監聽輸入事件，達成即時試算效果
     amountInput.addEventListener('input', calculateExchange);
     rateInput.addEventListener('input', calculateExchange);
   </script>
