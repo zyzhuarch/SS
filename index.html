@@ -5,14 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>簡約換匯小工具</title>
   
-  <!-- 載入大大指定的字體 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@282&display=swap" rel="stylesheet">
   
   <style>
     :root {
-      /* 設定指定色彩變數 */
       --bg-color: #E1DBC9;
       --amount-card-bg: #2D4530;
       --rate-card-bg: #3C3C3C;
@@ -26,12 +24,8 @@
 
     body {
       background-color: var(--bg-color);
-      /* 套用指定字體 */
       font-family: "M PLUS 1 Code", monospace;
-      font-optical-sizing: auto;
       font-weight: 282;
-      font-style: normal;
-      
       display: flex;
       justify-content: center;
       align-items: center;
@@ -45,10 +39,22 @@
       padding: 20px;
       display: flex;
       flex-direction: column;
+      align-items: center; /* 讓圖示置中 */
       gap: 20px;
     }
 
+    /* 桌面圖示的樣式 */
+    .app-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 18px; /* 類似 iOS 的圓角 */
+      object-fit: cover;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 8px;
+    }
+
     .card {
+      width: 100%;
       border-radius: 20px;
       padding: 32px 24px;
       color: var(--text-color);
@@ -101,7 +107,6 @@
       color: rgba(225, 219, 201, 0.3);
     }
 
-    /* 隱藏數字輸入框自帶的上下箭頭 */
     input[type=number]::-webkit-inner-spin-button,
     input[type=number]::-webkit-outer-spin-button {
       -webkit-appearance: none;
@@ -111,11 +116,11 @@
       -moz-appearance: textfield;
     }
 
-    /* 塔塔自由發揮的結果顯示區塊 */
     .result-section {
       text-align: center;
-      padding: 24px 0;
+      padding: 16px 0;
       color: var(--result-text);
+      width: 100%;
     }
 
     .result-label {
@@ -135,10 +140,13 @@
 <body>
 
   <div class="exchange-container">
-    <!-- 上方：輸入換匯金額 -->
+    <!-- 加入大大的桌面圖示 -->
+    <img src="ss.jpg" alt="App Icon" class="app-icon" onerror="this.style.display='none'">
+
+    <!-- 上方：輸入日幣金額 -->
     <div class="card amount-card">
       <div class="input-group">
-        <label for="amount">欲換匯金額 (台幣)</label>
+        <label for="amount">輸入金額 (日幣)</label>
         <input type="number" id="amount" placeholder="0" min="0">
       </div>
     </div>
@@ -146,43 +154,38 @@
     <!-- 下方：輸入匯率 -->
     <div class="card rate-card">
       <div class="input-group">
-        <label for="rate">當前匯率 (預設日幣)</label>
+        <label for="rate">當前匯率</label>
         <input type="number" id="rate" value="0.1998" step="0.0001" min="0">
       </div>
     </div>
 
-    <!-- 計算結果 -->
+    <!-- 計算結果 (換算為台幣通常直接四捨五入到整數) -->
     <div class="result-section">
-      <div class="result-label">可換得外幣</div>
+      <div class="result-label">折合台幣約為</div>
       <div class="result-value" id="result">0</div>
     </div>
   </div>
 
   <script>
-    // 綁定輸入框與結果顯示元素
     const amountInput = document.getElementById('amount');
     const rateInput = document.getElementById('rate');
     const resultDisplay = document.getElementById('result');
 
-    // 即時計算函數
     function calculateExchange() {
       const amount = parseFloat(amountInput.value) || 0;
       const rate = parseFloat(rateInput.value) || 0;
 
       if (amount > 0 && rate > 0) {
-        // 台幣除以匯率等於可換得的外幣
-        const converted = amount / rate;
+        // 日幣乘上匯率等於台幣
+        const converted = amount * rate;
         
-        // 格式化數字，加上千分位撇號並限制小數點後兩位
-        resultDisplay.textContent = new Intl.NumberFormat('zh-TW', { 
-          maximumFractionDigits: 2 
-        }).format(converted);
+        // 台幣通常不看小數點，這裡幫大大做了四捨五入到整數的處理
+        resultDisplay.textContent = Math.round(converted).toLocaleString('zh-TW');
       } else {
         resultDisplay.textContent = '0';
       }
     }
 
-    // 監聽輸入事件，達成即時試算效果
     amountInput.addEventListener('input', calculateExchange);
     rateInput.addEventListener('input', calculateExchange);
   </script>
