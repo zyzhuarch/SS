@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>日幣換匯小工具</title>
+  <title>換匯小工具</title>
   
   <!-- 載入大大指定的字體 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -163,12 +163,12 @@
     <div class="card amount-card">
       <div class="input-group">
         <!-- 修正為「輸入金額 日幣」 -->
-        <label for="amount">輸入金額 日幣 (JPY)</label>
+        <label for="amount">輸入金額</label>
         <input type="number" id="amount" placeholder="0" min="0">
       </div>
     </div>
 
-    <!-- 下方：當前匯率 (日幣 對 台幣) -->
+    <!-- 下方：當前匯率 -->
     <div class="card rate-card">
       <div class="input-group">
         <!-- 加強標籤描述，預設值保持 0.1998 -->
@@ -179,7 +179,6 @@
 
     <!-- 計算結果 (可換得台幣) -->
     <div class="result-section">
-      <!-- 修正為「可換得台幣」 -->
       <div class="result-label">可換得台幣 (TWD)</div>
       <div class="result-value" id="result">0</div>
     </div>
