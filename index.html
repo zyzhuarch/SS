@@ -5,12 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>換匯小工具</title>
   
-  <!-- iPhone 主畫面與網頁頁籤圖示 -->
   <link rel="apple-touch-icon" href="ss.jpg">
   <link rel="icon" type="image/jpg" sizes="192x192" href="ss.jpg">
   <link rel="icon" type="image/jpg" sizes="512x512" href="ss.jpg">
   
-  <!-- 載入字體 -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=M+PLUS+1+Code:wght@282&display=swap" rel="stylesheet">
@@ -139,8 +137,7 @@
       text-align: center;
       padding: 24px 0;
       color: var(--result-text);
-      /* 加入一個更亮、更穩定的背景，讓結果更顯眼，即使在圖片背景上 */
-      background-color: #F0EDE3; /* 稍微比 E1DBC9 亮一點 */
+      background-color: #F0EDE3; 
       border-radius: 20px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
@@ -157,6 +154,67 @@
       font-weight: bold;
       word-break: break-all;
     }
+
+    /* 速查表區塊樣式 */
+    .quick-ref-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .toggle-btn {
+      background-color: rgba(60, 60, 60, 0.8);
+      color: var(--text-color);
+      border: none;
+      border-radius: 16px;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .toggle-btn:active {
+      transform: scale(0.98);
+    }
+
+    .quick-ref-content {
+      background-color: rgba(240, 237, 227, 0.95);
+      border-radius: 16px;
+      padding: 16px 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: none; /* 預設隱藏 */
+      color: var(--result-text);
+      font-weight: bold;
+    }
+
+    .quick-ref-content.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .quick-ref-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .quick-ref-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px dashed rgba(45, 69, 48, 0.2);
+    }
+
+    .quick-ref-list li:last-child {
+      border-bottom: none;
+    }
   </style>
 </head>
 <body>
@@ -164,7 +222,6 @@
   <div class="overlay"></div>
 
   <div class="exchange-container">
-    <!-- 上方：輸入金額 日幣 -->
     <div class="card amount-card">
       <div class="input-group">
         <label for="amount">輸入金額</label>
@@ -172,7 +229,6 @@
       </div>
     </div>
 
-    <!-- 下方：當前匯率 -->
     <div class="card rate-card">
       <div class="input-group">
         <label for="rate">當前匯率</label>
@@ -180,40 +236,82 @@
       </div>
     </div>
 
-    <!-- 計算結果  -->
     <div class="result-section">
       <div class="result-label">台幣 (TWD)</div>
       <div class="result-value" id="result">0</div>
     </div>
+
+    <div class="quick-ref-container">
+      <button id="toggle-btn" class="toggle-btn">查看常用速查表 🔽</button>
+      <div id="quick-ref-content" class="quick-ref-content">
+        <ul class="quick-ref-list" id="quick-ref-list">
+          </ul>
+      </div>
+    </div>
   </div>
 
   <script>
-    // 綁定輸入框與結果顯示元素
+    // 綁定元素
     const amountInput = document.getElementById('amount');
     const rateInput = document.getElementById('rate');
     const resultDisplay = document.getElementById('result');
+    const toggleBtn = document.getElementById('toggle-btn');
+    const quickRefContent = document.getElementById('quick-ref-content');
+    const quickRefList = document.getElementById('quick-ref-list');
 
-    // 即時計算函數
+    // 常用日幣金額區間
+    const commonAmounts = [100, 500, 1000, 5000, 10000, 50000];
+
+    // 更新速查表內容的函數
+    function updateQuickReference(rate) {
+      quickRefList.innerHTML = ''; // 清空目前的列表
+      commonAmounts.forEach(amount => {
+        const converted = amount * rate;
+        
+        // 格式化數字 (台幣部分四捨五入取整數，看起來比較乾淨)
+        const formattedJPY = new Intl.NumberFormat('zh-TW').format(amount);
+        const formattedTWD = new Intl.NumberFormat('zh-TW', { maximumFractionDigits: 0 }).format(converted);
+        
+        const li = document.createElement('li');
+        li.innerHTML = `<span>¥ ${formattedJPY}</span><span>≈ NT$ ${formattedTWD}</span>`;
+        quickRefList.appendChild(li);
+      });
+    }
+
+    // 即時計算主函數
     function calculateExchange() {
       const amountJPY = parseFloat(amountInput.value) || 0;
       const rate = parseFloat(rateInput.value) || 0;
 
+      // 更新主計算結果
       if (amountJPY > 0 && rate > 0) {
-        // 日幣金額 * 匯率 = 台幣
         const converted = amountJPY * rate;
-        
-        // 格式化數字，加上千分位撇號並限制小數點後兩位
         resultDisplay.textContent = new Intl.NumberFormat('zh-TW', { 
           maximumFractionDigits: 2 
         }).format(converted);
       } else {
         resultDisplay.textContent = '0';
       }
+
+      // 同時更新速查表 (如果匯率有大於0的話)
+      if (rate > 0) {
+        updateQuickReference(rate);
+      }
     }
 
-    // 監聽輸入事件，達成即時試算效果
+    // 展開/收起速查表功能
+    toggleBtn.addEventListener('click', () => {
+      quickRefContent.classList.toggle('show');
+      const isShowing = quickRefContent.classList.contains('show');
+      toggleBtn.textContent = isShowing ? '收起速查表 🔼' : '查看常用速查表 🔽';
+    });
+
+    // 監聽輸入事件
     amountInput.addEventListener('input', calculateExchange);
     rateInput.addEventListener('input', calculateExchange);
+
+    // 網頁載入時先執行一次，把預設匯率的速查表畫出來
+    calculateExchange();
   </script>
 
 </body>
